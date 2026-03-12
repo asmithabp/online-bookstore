@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reset */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family: 'DM Sans', sans-serif;
+  background:#fdf8f0;
+  color:#1a1208;
+  line-height:1.6;
+}
+
+/* Layout container */
+.container{
+  width:100%;
+  max-width:1200px;
+  margin:auto;
+  padding:0 1.5rem;
+}
+
+/* Page spacing */
+.page-wrapper{
+  padding:3rem 0;
+  min-height:70vh;
+}
+
+/* Buttons */
+
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0.55rem 1.2rem;
+  border-radius:8px;
+  font-size:0.9rem;
+  font-weight:600;
+  cursor:pointer;
+  border:none;
+  transition:all 0.2s ease;
+}
+
+.btn-primary{
+  background:#c8820a;
+  color:white;
+}
+
+.btn-primary:hover{
+  background:#a56b05;
+}
+
+.btn-outline{
+  border:1px solid #c8820a;
+  color:#c8820a;
+  background:white;
+}
+
+.btn-outline:hover{
+  background:#c8820a;
+  color:white;
+}
+
+.btn-ghost{
+  background:transparent;
+}
+
+/* Cards */
+
+.card{
+  background:white;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 6px 20px rgba(0,0,0,0.08);
+  transition:all .25s ease;
+}
+
+.card:hover{
+  transform:translateY(-4px);
+}
+
+/* Book grid */
+
+.books-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:1.5rem;
+}
+
+/* Prices */
+
+.price{
+  font-weight:600;
+}
+
+.price-current{
+  color:#2d5a27;
+  margin-right:0.4rem;
+}
+
+.price-original{
+  text-decoration:line-through;
+  color:#8a7e70;
+  font-size:0.85rem;
+}
+
+/* Forms */
+
+input,select{
+  width:100%;
+  padding:0.6rem 0.8rem;
+  border-radius:8px;
+  border:1px solid #e2d5c0;
+  font-size:0.9rem;
+}
+
+input:focus{
+  outline:none;
+  border-color:#c8820a;
+}
+
+/* Loading */
+
+.loading-center{
+  display:flex;
+  justify-content:center;
+  padding:3rem 0;
+}
+
+.spinner{
+  width:40px;
+  height:40px;
+  border:4px solid #eee;
+  border-top:4px solid #c8820a;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+  to{ transform:rotate(360deg); }
+}
