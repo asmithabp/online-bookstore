@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import BookCard from "../components/BookCard";
@@ -19,38 +18,49 @@ const Home = () => {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
-  // FETCH GOOGLE BOOKS
+  // FETCH BOOKS FROM OPENLIBRARY
   useEffect(() => {
-    fetch("https://www.googleapis.com/books/v1/volumes?q=programming&maxResults=20")
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchBooks = async () => {
+      try {
+        const res = await fetch(
+          "https://openlibrary.org/search.json?q=programming&limit=20"
+        );
+
+        const data = await res.json();
+
         const books =
-          data.items?.map((item, index) => ({
-            _id: item.id || index,
-            title: item.volumeInfo.title || "Unknown Title",
-            author: item.volumeInfo.authors?.join(", ") || "Unknown Author",
-            category: item.volumeInfo.categories?.[0] || "General",
-            coverImage:
-              item.volumeInfo.imageLinks?.thumbnail ||
-              "https://via.placeholder.com/200x280?text=No+Cover",
-            price: Math.floor(Math.random() * 500) + 200,
+          data.docs?.slice(0, 12).map((doc, index) => ({
+            _id: doc.key || index,
+            title: doc.title || "Unknown Title",
+            author: doc.author_name?.join(", ") || "Unknown Author",
+            category: doc.subject?.[0] || "General",
+            coverImage: doc.cover_i
+              ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`
+              : "https://via.placeholder.com/200x280?text=No+Cover",
+            price: Math.floor(Math.random() * 400) + 200,
             originalPrice: Math.floor(Math.random() * 600) + 500,
-            rating: item.volumeInfo.averageRating || 4,
-            numReviews: item.volumeInfo.ratingsCount || 10,
+            rating: 4,
+            numReviews: 10,
             stock: 10,
           })) || [];
 
         setFeatured(books);
-      })
-      .catch((err) => console.log(err))
-      .finally(() => setLoading(false));
+      } catch (error) {
+        console.log("BOOK FETCH ERROR:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
   }, []);
 
+  // SEARCH
   const handleSearch = (e) => {
     e.preventDefault();
-    if (search.trim()) {
-      navigate(`/books?search=${encodeURIComponent(search.trim())}`);
-    }
+    if (!search.trim()) return;
+
+    navigate(`/books?search=${encodeURIComponent(search.trim())}`);
   };
 
   return (
@@ -68,31 +78,12 @@ const Home = () => {
       >
         <div className="container">
 
-          <p
-            style={{
-              color: "#c8820a",
-              fontSize: "0.9rem",
-              letterSpacing: "0.15em",
-              marginBottom: "1rem",
-            }}
-          >
-            ✦ India's Favourite Bookstore ✦
-          </p>
-
-          <h1 style={{ fontFamily: "Playfair Display", marginBottom: "1rem" }}>
-            Every Book Is a <br />
-            <em style={{ color: "#e8a020" }}>New Journey</em>
+          <h1 style={{ marginBottom: "1rem" }}>
+            📚 Welcome to Online Bookstore
           </h1>
 
-          <p
-            style={{
-              maxWidth: "520px",
-              margin: "0 auto 2rem",
-              color: "#c4b090",
-            }}
-          >
-            Discover thousands of books across all genres delivered to your
-            doorstep across India.
+          <p style={{ marginBottom: "2rem", color: "#c4b090" }}>
+            Discover thousands of books across all genres
           </p>
 
           {/* SEARCH */}
@@ -105,21 +96,19 @@ const Home = () => {
               background: "white",
               borderRadius: "50px",
               overflow: "hidden",
-              boxShadow: "0 8px 20px rgba(0,0,0,0.15)"
             }}
           >
             <input
               type="text"
-              placeholder="Search by title or author..."
+              placeholder="Search books..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{
                 flex: 1,
                 border: "none",
                 outline: "none",
-                padding: "0.9rem 1.5rem",
-                color: "#1a1208",              // FIX: visible text
-                fontSize: "0.95rem"
+                padding: "12px 20px",
+                color: "#000",
               }}
             />
 
@@ -129,116 +118,75 @@ const Home = () => {
                 background: "#c8820a",
                 color: "white",
                 border: "none",
-                padding: "0.9rem 1.5rem",
+                padding: "12px 20px",
                 cursor: "pointer",
-                fontWeight: "500"
               }}
             >
               Search
             </button>
           </form>
+
         </div>
       </section>
 
       {/* CATEGORIES */}
-      <section
-        style={{
-          padding: "3rem 0",
-          background: "#fdf8f0",
-          borderBottom: "1px solid #e2d5c0",
-        }}
-      >
+      <section style={{ padding: "40px 0", textAlign: "center" }}>
         <div className="container">
-          <div
-            style={{
-              display: "flex",
-              gap: "0.75rem",
-              flexWrap: "wrap",
-              justifyContent: "center",
-            }}
-          >
-            {CATEGORIES.map((cat) => (
-              <Link
-                key={cat}
-                to={`/books?category=${cat}`}
-                style={{
-                  padding: "0.5rem 1.25rem",
-                  borderRadius: "50px",
-                  border: "1px solid #e2d5c0",
-                  background: "white",
-                  color: "#3d3020",
-                  fontSize: "0.9rem",
-                }}
-              >
-                {cat}
-              </Link>
-            ))}
-          </div>
+
+          {CATEGORIES.map((cat) => (
+            <Link
+              key={cat}
+              to={`/books?search=${cat}`}
+              style={{
+                margin: "5px",
+                padding: "8px 16px",
+                border: "1px solid #ddd",
+                borderRadius: "20px",
+                display: "inline-block",
+                textDecoration: "none",
+                color: "#333",
+              }}
+            >
+              {cat}
+            </Link>
+          ))}
+
         </div>
       </section>
 
       {/* FEATURED BOOKS */}
-      <section style={{ padding: "4rem 0" }}>
+      <section style={{ padding: "40px 0" }}>
         <div className="container">
 
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
-              marginBottom: "2rem",
+              marginBottom: "20px",
             }}
           >
             <h2>Featured Books</h2>
-            <Link to="/books">View All →</Link>
+            <Link to="/books">View All</Link>
           </div>
 
           {loading ? (
-            <div style={{ textAlign: "center" }}>Loading...</div>
+            <p style={{ textAlign: "center" }}>Loading books...</p>
+          ) : featured.length === 0 ? (
+            <p style={{ textAlign: "center" }}>No books available</p>
           ) : (
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: "1.5rem",
+                gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+                gap: "20px",
               }}
             >
-              {featured.map((book, index) => (
-                <BookCard key={index} book={book} />
+              {featured.map((book) => (
+                <BookCard key={book._id} book={book} />
               ))}
             </div>
           )}
-        </div>
-      </section>
 
-      {/* CTA */}
-      <section
-        style={{
-          background: "linear-gradient(135deg,#2d5a27,#1a3a16)",
-          padding: "4rem 0",
-          textAlign: "center",
-        }}
-      >
-        <div className="container">
-          <h2 style={{ color: "white", marginBottom: "1rem" }}>
-            Free Shipping on Orders Above ₹500
-          </h2>
-
-          <p style={{ color: "#a8d4a0", marginBottom: "1.5rem" }}>
-            Order today and get your books delivered in 2-5 days anywhere in
-            India.
-          </p>
-
-          <Link
-            to="/books"
-            style={{
-              background: "#e8a020",
-              padding: "0.8rem 1.6rem",
-              borderRadius: "6px",
-              color: "white",
-            }}
-          >
-            Shop Now →
-          </Link>
         </div>
       </section>
 
@@ -247,4 +195,3 @@ const Home = () => {
 };
 
 export default Home;
-

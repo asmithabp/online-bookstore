@@ -8,14 +8,22 @@ const BookCard = ({ book }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const discount = book.originalPrice
-    ? Math.round(((book.originalPrice - book.price) / book.originalPrice) * 100)
-    : 0;
+  const price = book.price || 299;
+  const originalPrice = book.originalPrice || price + 100;
+  const stock = book.stock ?? 10;
+  const category = book.category || "Books";
 
-  const renderStars = (rating) => {
+  const discount = Math.round(((originalPrice - price) / originalPrice) * 100);
+
+  const renderStars = (rating = 4) => {
     const full = Math.floor(rating);
     const half = rating % 1 >= 0.5;
-    return "★".repeat(full) + (half ? "½" : "") + "☆".repeat(5 - full - (half ? 1 : 0));
+
+    return (
+      "★".repeat(full) +
+      (half ? "½" : "") +
+      "☆".repeat(5 - full - (half ? 1 : 0))
+    );
   };
 
   const handleAddToCart = () => {
@@ -30,7 +38,8 @@ const BookCard = ({ book }) => {
 
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition duration-300 p-2 flex flex-col">
-
+      
+      {/* Book Image */}
       <Link
         to={`/books/${book._id || book.id}`}
         state={{ book }}
@@ -42,7 +51,10 @@ const BookCard = ({ book }) => {
         }}
       >
         <img
-          src={book.coverImage || "https://via.placeholder.com/200x280?text=No+Cover"}
+          src={
+            book.coverImage ||
+            "https://via.placeholder.com/200x280?text=No+Cover"
+          }
           alt={book.title}
           style={{
             width: "100%",
@@ -72,7 +84,7 @@ const BookCard = ({ book }) => {
           </span>
         )}
 
-        {book.stock === 0 && (
+        {stock === 0 && (
           <div
             style={{
               position: "absolute",
@@ -91,6 +103,7 @@ const BookCard = ({ book }) => {
         )}
       </Link>
 
+      {/* Book Details */}
       <div
         style={{
           padding: "1rem",
@@ -109,7 +122,7 @@ const BookCard = ({ book }) => {
             fontWeight: 600,
           }}
         >
-          {book.category}
+          {category}
         </span>
 
         <Link to={`/books/${book._id || book.id}`} state={{ book }}>
@@ -126,25 +139,26 @@ const BookCard = ({ book }) => {
           </h3>
         </Link>
 
-        <p style={{ fontSize: "0.82rem", color: "#8a7e70" }}>{book.author}</p>
+        <p style={{ fontSize: "0.82rem", color: "#8a7e70" }}>
+          {book.author || "Unknown Author"}
+        </p>
 
-        {book.rating > 0 && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.35rem",
-            }}
-          >
-            <span className="stars" style={{ fontSize: "0.8rem" }}>
-              {renderStars(book.rating)}
-            </span>
-            <span style={{ fontSize: "0.75rem", color: "#8a7e70" }}>
-              ({book.numReviews})
-            </span>
-          </div>
-        )}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.35rem",
+          }}
+        >
+          <span style={{ fontSize: "0.8rem" }}>
+            {renderStars(book.rating)}
+          </span>
+          <span style={{ fontSize: "0.75rem", color: "#8a7e70" }}>
+            ({book.numReviews || 10})
+          </span>
+        </div>
 
+        {/* Price + Cart */}
         <div
           style={{
             marginTop: "auto",
@@ -155,23 +169,36 @@ const BookCard = ({ book }) => {
           }}
         >
           <div>
-            <span className="price price-current">₹{book.price}</span>
+            <span style={{ fontWeight: "bold" }}>₹{price}</span>
 
-            {book.originalPrice && (
-              <span className="price price-original">₹{book.originalPrice}</span>
+            {originalPrice && (
+              <span
+                style={{
+                  textDecoration: "line-through",
+                  marginLeft: "6px",
+                  color: "#999",
+                  fontSize: "0.85rem",
+                }}
+              >
+                ₹{originalPrice}
+              </span>
             )}
           </div>
 
           <button
-            className="btn btn-primary btn-sm"
             onClick={handleAddToCart}
-            disabled={loading || book.stock === 0}
+            disabled={loading || stock === 0}
             style={{
               fontSize: "0.8rem",
               padding: "0.35rem 0.8rem",
+              background: "#c8820a",
+              border: "none",
+              color: "white",
+              borderRadius: "5px",
+              cursor: "pointer",
             }}
           >
-            {book.stock === 0 ? "Sold Out" : "+ Cart"}
+            {stock === 0 ? "Sold Out" : "+ Cart"}
           </button>
         </div>
       </div>

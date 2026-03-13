@@ -6,82 +6,78 @@ const Books = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Read query from URL
   const params = new URLSearchParams(location.search);
   const query = params.get("search") || "programming";
 
   const [books, setBooks] = useState([]);
   const [searchInput, setSearchInput] = useState(query);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  const categories = [
-    "programming",
-    "fiction",
-    "non fiction",
-    "science",
-    "history",
-    "business",
-  ];
+  // Fetch books from OpenLibrary
+  const fetchBooks = async (q) => {
+    try {
+      setLoading(true);
 
-  const fetchBooks = (searchQuery) => {
-    setLoading(true);
+      const res = await fetch(
+        `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}`
+      );
 
-    fetch(
-      `https://www.googleapis.com/books/v1/volumes?q=${searchQuery}&maxResults=30`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        const formatted =
-          data.items?.map((item, index) => ({
-            _id: item.id || index,
-            title: item.volumeInfo.title || "Unknown Title",
-            author: item.volumeInfo.authors?.join(", ") || "Unknown Author",
-            category: item.volumeInfo.categories?.[0] || "General",
-            description: item.volumeInfo.description || "No description",
-            coverImage:
-              item.volumeInfo.imageLinks?.thumbnail ||
-              "https://via.placeholder.com/200x280?text=No+Cover",
-            price: Math.floor(Math.random() * 500) + 200,
-            rating: item.volumeInfo.averageRating || 4,
-            numReviews: item.volumeInfo.ratingsCount || 10,
-            stock: 10,
-          })) || [];
+      if (!res.ok) {
+        throw new Error("Failed to fetch books");
+      }
 
-        setBooks(formatted);
-      })
-      .catch((err) => console.log(err))
-      .finally(() => setLoading(false));
-  };
+      const data = await res.json();
 
-  useEffect(() => {
-    fetchBooks(query);
-    setSearchInput(query);
-    window.scrollTo(0, 0);
-  }, [query]);
+      if (!data.docs || data.docs.length === 0) {
+        setBooks([]);
+        return;
+      }
 
-  const handleSearch = (e) => {
-    e.preventDefault();
+      const formattedBooks = data.docs.slice(0, 20).map((doc, index) => ({
+        _id: doc.key || index,
+        title: doc.title || "Unknown Title",
+        author: doc.author_name?.join(", ") || "Unknown Author",
+        coverImage: doc.cover_i
+          ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`
+          : "https://via.placeholder.com/200x280?text=No+Cover",
+        price: Math.floor(Math.random() * 400) + 200,
+        rating: 4,
+        numReviews: 10,
+      }));
 
-    if (searchInput.trim() !== "") {
-      navigate(`/books?search=${searchInput}`);
+      setBooks(formattedBooks);
+    } catch (error) {
+      console.error("BOOK FETCH ERROR:", error);
+      setBooks([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCategory = (category) => {
-    navigate(`/books?search=${category}`);
+  // Run when query changes
+  useEffect(() => {
+    fetchBooks(query);
+    setSearchInput(query);
+  }, [query]);
+
+  // Search submit
+  const handleSearch = (e) => {
+    e.preventDefault();
+
+    if (!searchInput.trim()) return;
+
+    navigate(`/books?search=${encodeURIComponent(searchInput)}`);
   };
 
   return (
-    <div className="container" style={{ padding: "40px 0" }}>
+    <div className="container" style={{ padding: "40px" }}>
       <h1>Browse Books</h1>
 
-      {/* SEARCH BAR */}
+      {/* Search Bar */}
       <form
         onSubmit={handleSearch}
-        style={{
-          display: "flex",
-          gap: "10px",
-          margin: "20px 0",
-        }}
+        style={{ display: "flex", gap: "10px", margin: "20px 0" }}
       >
         <input
           type="text"
@@ -99,52 +95,28 @@ const Books = () => {
         <button
           type="submit"
           style={{
-            padding: "10px 20px",
+            padding: "10px 18px",
             background: "#c8820a",
             color: "white",
             border: "none",
             borderRadius: "6px",
+            cursor: "pointer",
           }}
         >
           Search
         </button>
       </form>
 
-      {/* CATEGORY FILTER */}
-      <div
-        style={{
-          display: "flex",
-          gap: "10px",
-          flexWrap: "wrap",
-          marginBottom: "30px",
-        }}
-      >
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => handleCategory(cat)}
-            style={{
-              padding: "8px 14px",
-              border: "1px solid #ddd",
-              borderRadius: "6px",
-              background: "#f5f5f5",
-              cursor: "pointer",
-              textTransform: "capitalize",
-            }}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* BOOK GRID */}
+      {/* Books List */}
       {loading ? (
         <p>Loading books...</p>
+      ) : books.length === 0 ? (
+        <p>No books found</p>
       ) : (
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
             gap: "20px",
           }}
         >

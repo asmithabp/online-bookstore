@@ -1,23 +1,22 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
+import { ProtectedRoute, AdminRoute } from "./components/ProtectedRoute";
 
-import { AuthProvider } from './context/AuthContext';
-import { CartProvider } from './context/CartContext';
-import { ProtectedRoute, AdminRoute } from './components/ProtectedRoute';
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-
-import Home from './pages/Home';
-import Books from './pages/Books';
-import BookDetail from './pages/BookDetail';
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Orders from './pages/Orders';
-import AdminDashboard from './pages/AdminDashboard';
+import Home from "./pages/Home";
+import Books from "./pages/Books";
+import BookDetail from "./pages/BookDetail";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Orders from "./pages/Orders";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   return (
@@ -30,10 +29,10 @@ function App() {
             toastOptions={{
               style: {
                 fontFamily: "'DM Sans', sans-serif",
-                borderRadius: '10px',
-                background: '#1a1208',
-                color: '#fdf8f0'
-              }
+                borderRadius: "10px",
+                background: "#1a1208",
+                color: "#fdf8f0",
+              },
             }}
           />
 
@@ -43,18 +42,23 @@ function App() {
 
             <Routes>
 
+              {/* HOME */}
               <Route path="/" element={<Home />} />
 
+              {/* BOOK LIST */}
               <Route path="/books" element={<Books />} />
 
+              {/* BOOK DETAIL */}
               <Route path="/books/:id" element={<BookDetail />} />
 
+              {/* AUTH */}
               <Route path="/login" element={<Login />} />
-
               <Route path="/register" element={<Register />} />
 
+              {/* CART */}
               <Route path="/cart" element={<Cart />} />
 
+              {/* CHECKOUT (PROTECTED) */}
               <Route
                 path="/checkout"
                 element={
@@ -64,6 +68,7 @@ function App() {
                 }
               />
 
+              {/* ORDERS (PROTECTED) */}
               <Route
                 path="/orders"
                 element={
@@ -73,30 +78,38 @@ function App() {
                 }
               />
 
-              
-              <Route path="/admin" element={<AdminDashboard />} />
+              {/* ADMIN */}
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <AdminDashboard />
+                  </AdminRoute>
+                }
+              />
 
+              {/* 404 PAGE */}
               <Route
                 path="*"
                 element={
-                  <div style={{ textAlign: 'center' }}>
-                    <h1 style={{ fontSize: '6rem', color: '#e2d5c0' }}>404</h1>
+                  <div style={{ textAlign: "center", padding: "60px" }}>
+                    <h1 style={{ fontSize: "6rem", color: "#e2d5c0" }}>404</h1>
                     <h2>Page Not Found</h2>
 
                     <a
                       href="/"
                       style={{
-                        marginTop: '20px',
-                        display: 'inline-block',
-                        background: '#c8820a',
-                        color: 'white',
-                        padding: '10px 20px',
-                        borderRadius: '6px'
+                        marginTop: "20px",
+                        display: "inline-block",
+                        background: "#c8820a",
+                        color: "white",
+                        padding: "10px 20px",
+                        borderRadius: "6px",
+                        textDecoration: "none",
                       }}
                     >
                       Go Home
                     </a>
-
                   </div>
                 }
               />
@@ -114,4 +127,3 @@ function App() {
 }
 
 export default App;
-
