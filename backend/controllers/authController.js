@@ -1,155 +1,85 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-// Generate JWT token
+// Generate JWT
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: "30d",
-  });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 };
+
 
 // REGISTER
-const register = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
+const register = async (req,res) => {
 
-    if (!name || !email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
+  try{
+
+    const {name,email,password} = req.body;
+
+    if(!name || !email || !password){
+      return res.status(400).json({message:"All fields required"});
     }
 
-    const existingUser = await User.findOne({ email });
+    const userExists = await User.findOne({email});
 
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "Email already registered",
-      });
+    if(userExists){
+      return res.status(400).json({message:"User already exists"});
     }
 
-    const user = await User.create({ name, email, password });
-
-    const token = generateToken(user._id);
+    const user = await User.create({
+      name,
+      email,
+      password
+    });
 
     res.status(201).json({
-      success: true,
-      message: "Registration successful",
-      token,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      success:true,
+      token:generateToken(user._id),
+      user:{
+        id:user._id,
+        name:user.name,
+        email:user.email
+      }
     });
 
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+  }catch(error){
+    res.status(500).json({message:error.message});
   }
+
 };
 
+
 // LOGIN
-const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+const login = async (req,res) => {
 
-    const user = await User.findOne({ email }).select("+password");
+  try{
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password",
-      });
+    const {email,password} = req.body;
+
+    const user = await User.findOne({email}).select("+password");
+
+    if(!user){
+      return res.status(401).json({message:"Invalid email"});
     }
 
     const isMatch = await user.comparePassword(password);
 
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password",
-      });
+    if(!isMatch){
+      return res.status(401).json({message:"Invalid password"});
     }
 
-    const token = generateToken(user._id);
-
     res.json({
-      success: true,
-      message: "Login successful",
-      token,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      success:true,
+      token:generateToken(user._id),
+      user:{
+        id:user._id,
+        name:user.name,
+        email:user.email
+      }
     });
 
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+  }catch(error){
+    res.status(500).json({message:error.message});
   }
+
 };
 
-// GET PROFILE
-const getProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    res.json({ success: true, user });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-// UPDATE PROFILE
-const updateProfile = async (req, res) => {
-  try {
-    const { name, address } = req.body;
-
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      { name, address },
-      { new: true }
-    );
-
-    res.json({
-      success: true,
-      message: "Profile updated",
-      user,
-    });
-
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-// GET ALL USERS
-const getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find().select("-password");
-
-    res.json({
-      success: true,
-      count: users.length,
-      users,
-    });
-
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-module.exports = {
-  register,
-  login,
-  getProfile,
-  updateProfile,
-  getAllUsers,
-};
+module.exports = { register, login };
